@@ -1,0 +1,11 @@
+config.log
+.cache
+.sconsign.dblite
+.sconf_temp
+*.pyc
+_build*
+pytest_session.txt
+tests/.tests
+version.py
+.eggs
+*.egg-info
