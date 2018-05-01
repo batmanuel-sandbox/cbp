@@ -279,8 +279,7 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                         self.checkOrientation()
 
     def testSetFocalPlanePos(self):
-        maxErrMm = self.scc.pixelSizeMm * 0.02
-        maxErrRad = self.scc.plateScale.asRadians() * maxErrMm
+        maxErrMm = self.scc.pixelSizeMm * 0.0001
         for focalPlanePos, pupilPos, beam in itertools.product(
             ((0, 0), (500, 200), (25, 850)),
             ((0, 0), (0, 5000), (-5000, 0), (5000, -5000)),
@@ -290,23 +289,8 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                 self.cco.setFocalPlanePos(pupilPos=pupilPos, focalPlanePos=focalPlanePos, beam=beam)
                 beamInfo = self.cco[beam]
                 self.assertTrue(beamInfo.isOnFocalPlane)
-                err = math.hypot(*np.subtract(beamInfo.focalPlanePos, focalPlanePos))
-                if err > maxErrMm:
-                    # check if error is due to the CBP code or a numeric error inverting the FOCAL_PLANE
-                    # to FIELD_ANGLE transform (a camera geometry issue)
-                    focalPlaneToFieldAngle = self.cco.cameraGeom.getTransform(FOCAL_PLANE, FIELD_ANGLE)
-                    focalFieldAngle = focalPlaneToFieldAngle.applyForward(Point2D(*focalPlanePos))
-                    fieldAngleErr = math.hypot(*(focalFieldAngle - beamInfo.focalFieldAngle))
-                    if fieldAngleErr > maxErrRad:
-                        # the field angle error is also too large; fail the test
-                        self.fail("Failed with %s radians of error" % (fieldAngleErr,))
-                    else:
-                        # the error is fine in field angle but excessive for focal plane position;
-                        # this is due to a poor inverse in FOCAL_PLANE to FIELD_ANGLE,
-                        # which is not CBP's fault, so print a warning and continue
-                        print("Excessive error %0.4f mm for focalPlanePos=%s, pupilPos=%s, beam=%s"
-                              " due to poor camera geometry inverse" %
-                              (err, focalPlanePos, pupilPos, beam))
+                errMm = math.hypot(*np.subtract(beamInfo.focalPlanePos, focalPlanePos))
+                self.assertLess(errMm, maxErrMm)
                 self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, maxDiff=0.001)
 
     def testSetPupilFieldAngleZero(self):
