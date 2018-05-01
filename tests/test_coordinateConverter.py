@@ -47,6 +47,11 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
         self.cco = self.scc.coordinateConverter
         # a list of all detector names plus None for the default detector
         self.detectorNames = itertools.chain([None], self.cco.cameraGeom.getNameIter())
+        # set values for maximum error that are "plenty good enough"
+        self.maxPupilPosErr = 1e-4  # mm
+        self.maxDetectorPosErr = 1e-4  # pixels
+        self.maxFocalPlanePosErr = self.scc.pixelSizeMm * self.maxDetectorPosErr  # mm
+        self.maxFieldAngleErrRad = (0.001*arcseconds).asRadians()
 
     def tearDown(self):
         if ReportRecordedErrors:
@@ -68,7 +73,6 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
         del self.scc
 
     def testOffsetDetectorPos(self):
-        maxErrorPix = 0.001
         pupilPos = (3000, 4000)
         detectorPos = (400, 550)
         for pupilOffset, detectorOffset, detector, beam in itertools.product(
@@ -81,9 +85,9 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                 self.cco.setDetectorPos(pupilPos=pupilPos, detectorPos=detectorPos, detector=detector,
                                         beam=beam)
                 initialBeamInfo = self.cco[beam]
-                self.assertPairsAlmostEqual(initialBeamInfo.pupilPos, pupilPos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(initialBeamInfo.pupilPos, pupilPos, self.maxPupilPosErr)
                 self.assertPairsAlmostEqual(initialBeamInfo.detectorPos, detectorPos,
-                                            maxDiff=maxErrorPix)
+                                            maxDiff=self.maxDetectorPosErr)
                 self.cco.offsetDetectorPos(pupilOffset=pupilOffset, detectorOffset=detectorOffset,
                                            beam=beam)
                 finalBeamInfo = self.cco[beam]
@@ -95,9 +99,9 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                     desiredDetectorPos = detectorPos
                 else:
                     desiredDetectorPos = np.add(detectorPos, detectorOffset)
-                self.assertPairsAlmostEqual(finalBeamInfo.pupilPos, desiredPupilPos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(finalBeamInfo.pupilPos, desiredPupilPos, self.maxPupilPosErr)
                 self.assertPairsAlmostEqual(finalBeamInfo.detectorPos, desiredDetectorPos,
-                                            maxDiff=0.1)
+                                            maxDiff=self.maxDetectorPosErr)
 
     def testOffsetFocalFieldAngle(self):
         pupilPos = (3000, 4000)
@@ -111,7 +115,7 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                               beam=beam):
                 self.cco.setFocalFieldAngle(pupilPos=pupilPos, focalFieldAngle=focalFieldAngle, beam=beam)
                 initialBeamInfo = self.cco[beam]
-                self.assertPairsAlmostEqual(initialBeamInfo.pupilPos, pupilPos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(initialBeamInfo.pupilPos, pupilPos, self.maxPupilPosErr)
                 self.assertPairsAlmostEqual(initialBeamInfo.focalFieldAngle, focalFieldAngle)
 
                 self.cco.offsetFocalFieldAngle(pupilOffset=pupilOffset,
@@ -125,9 +129,9 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                     desiredFocalFieldAngle = focalFieldAngle
                 else:
                     desiredFocalFieldAngle = np.add(focalFieldAngle, focalFieldAngleOffset)
-                self.assertPairsAlmostEqual(finalBeamInfo.pupilPos, desiredPupilPos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(finalBeamInfo.pupilPos, desiredPupilPos, self.maxPupilPosErr)
                 self.assertPairsAlmostEqual(finalBeamInfo.focalFieldAngle, desiredFocalFieldAngle,
-                                            maxDiff=2e-8)
+                                            maxDiff=self.maxFieldAngleErrRad)
 
     def testOffsetFocalPlanePos(self):
         pupilPos = (3000, 4000)
@@ -140,8 +144,9 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
             with self.subTest(pupilOffset=pupilOffset, focalPlanePos=focalPlanePos, beam=beam):
                 self.cco.setFocalPlanePos(pupilPos=pupilPos, focalPlanePos=focalPlanePos, beam=beam)
                 initialBeamInfo = self.cco[beam]
-                self.assertPairsAlmostEqual(initialBeamInfo.pupilPos, pupilPos, maxDiff=0.001)
-                self.assertPairsAlmostEqual(initialBeamInfo.focalPlanePos, focalPlanePos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(initialBeamInfo.pupilPos, pupilPos, self.maxPupilPosErr)
+                self.assertPairsAlmostEqual(initialBeamInfo.focalPlanePos, focalPlanePos,
+                                            maxDiff=self.maxFocalPlanePosErr)
                 self.cco.offsetFocalPlanePos(pupilOffset=pupilOffset, focalPlaneOffset=focalPlaneOffset,
                                              beam=beam)
                 finalBeamInfo = self.cco[beam]
@@ -153,8 +158,9 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                     desiredFocalPlanePos = focalPlanePos
                 else:
                     desiredFocalPlanePos = np.add(focalPlanePos, focalPlaneOffset)
-                self.assertPairsAlmostEqual(finalBeamInfo.pupilPos, desiredPupilPos, maxDiff=0.001)
-                self.assertPairsAlmostEqual(finalBeamInfo.focalPlanePos, desiredFocalPlanePos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(finalBeamInfo.pupilPos, desiredPupilPos, self.maxPupilPosErr)
+                self.assertPairsAlmostEqual(finalBeamInfo.focalPlanePos, desiredFocalPlanePos,
+                                            maxDiff=self.maxFocalPlanePosErr)
 
     def testSampleBasics(self):
         """Test basic elements of the sample coordinate converter
@@ -197,7 +203,7 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
         self.assertPairsAlmostEqual(beamInfo0.focalPlanePos, (0, 0))
         self.assertPairsAlmostEqual(beamInfo0.focalFieldAngle, (0, 0))
         self.assertPairsAlmostEqual(beamInfo0.pupilFieldAngle, (0, 0))
-        self.assertPairsAlmostEqual(beamInfo0.pupilPos, (0, 0), maxDiff=0.001)
+        self.assertPairsAlmostEqual(beamInfo0.pupilPos, (0, 0), self.maxPupilPosErr)
         self.assertEqual(beamInfo0.detectorName, "D0")
         bboxd = Box2D(self.cco.cameraGeom["D0"].getBBox())
         detectorCtrPos = bboxd.getCenter()
@@ -249,13 +255,14 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                 with self.subTest(focalFieldAngle=focalFieldAngle, pupilPos=pupilPos, beam=beam):
                     self.cco.setFocalFieldAngle(pupilPos=pupilPos, focalFieldAngle=focalFieldAngle, beam=beam)
                     beamInfo = self.cco[beam]
-                    self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, maxDiff=0.001)
-                    self.assertPairsAlmostEqual(beamInfo.focalFieldAngle, focalFieldAngle, maxDiff=1e-5)
-                    self.assertPairsAlmostEqual(beamInfo.focalPlanePos, desiredFocalPlanePos, maxDiff=0.001)
+                    self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, self.maxPupilPosErr)
+                    self.assertPairsAlmostEqual(beamInfo.focalFieldAngle, focalFieldAngle,
+                                                maxDiff=self.maxFieldAngleErrRad)
+                    self.assertPairsAlmostEqual(beamInfo.focalPlanePos, desiredFocalPlanePos,
+                                                maxDiff=self.maxFocalPlanePosErr)
                     self.checkOrientation()
 
     def testSetDetectorPos(self):
-        maxErrorPix = 0.01
         for detectorPos, pupilPos, detector in itertools.product(
             ((0, 0), (500, 1000), (25, 1850)),
             ((0, 0), (0, 5000), (-5000, 0), (5000, -5000)),
@@ -274,8 +281,10 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                         beamInfo = self.cco[beam]
                         self.assertTrue(beamInfo.isOnDetector)
                         self.assertEqual(beamInfo.detectorName, desiredDetector)
-                        self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, maxDiff=0.001)
-                        self.assertPairsAlmostEqual(beamInfo.detectorPos, detectorPos, maxDiff=maxErrorPix)
+                        self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos,
+                                                    maxDiff=self.maxPupilPosErr)
+                        self.assertPairsAlmostEqual(beamInfo.detectorPos, detectorPos,
+                                                    maxDiff=self.maxDetectorPosErr)
                         self.checkOrientation()
 
     def testSetFocalPlanePos(self):
@@ -291,7 +300,7 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                 self.assertTrue(beamInfo.isOnFocalPlane)
                 errMm = math.hypot(*np.subtract(beamInfo.focalPlanePos, focalPlanePos))
                 self.assertLess(errMm, maxErrMm)
-                self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, self.maxPupilPosErr)
 
     def testSetPupilFieldAngleZero(self):
         """Test setPupilFieldAngle for zero field angle and various points on the pupil
@@ -306,7 +315,7 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                 negativeCbpDir = -np.array(cbpDir, dtype=float)
                 np.testing.assert_allclose(telDir, negativeCbpDir, atol=1e-15)
 
-                maxDetectorPosError = 0.02
+                maxDetectorPosError = 0.0001
 
                 # beam 0 should be pointed to the center of the pupil, normal to the pupil
                 # and land on the center of the focal plane and the center of detector D0
@@ -319,7 +328,7 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                 self.assertPairsAlmostEqual(beamInfo0.focalPlanePos, (0, 0), maxDiff=maxDetectorPosError)
                 self.assertPairsAlmostEqual(beamInfo0.focalFieldAngle, (0, 0))
                 self.assertPairsAlmostEqual(beamInfo0.pupilFieldAngle, (0, 0))
-                self.assertPairsAlmostEqual(beamInfo0.pupilPos, pupilPos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(beamInfo0.pupilPos, pupilPos, self.maxPupilPosErr)
                 self.assertEqual(beamInfo0.detectorName, "D0")
                 bboxd = Box2D(self.cco.cameraGeom["D0"].getBBox())
                 detectorCtrPos = bboxd.getCenter()
@@ -372,7 +381,7 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
             with self.subTest(pupilFieldAngle=pupilFieldAngle, pupilPos=pupilPos, beam=beam):
                 self.cco.setPupilFieldAngle(pupilPos=pupilPos, pupilFieldAngle=pupilFieldAngle, beam=beam)
                 beamInfo = self.cco[beam]
-                self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, self.maxPupilPosErr)
                 self.assertPairsAlmostEqual(beamInfo.pupilFieldAngle, pupilFieldAngle, maxDiff=1e-5)
                 self.checkOrientation()
 
@@ -494,7 +503,7 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                 cco.setPupilFieldAngle(pupilPos=pupilPos, pupilFieldAngle=pupilFieldAngle, beam=beam)
                 beamInfo = cco[beam]
                 self.assertPairsAlmostEqual(beamInfo.pupilFieldAngle, pupilFieldAngle)
-                self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, self.maxPupilPosErr)
 
     def testSetDetectorPosFlipX(self):
         """Test setDetectorPos with varying flipX for telescope and CBP
@@ -514,7 +523,7 @@ class CoordConverterTestCase(lsst.utils.tests.TestCase):
                 self.assertEqual(beamInfo.detectorName, detectorName)
                 self.checkOrientation()
                 self.assertPairsAlmostEqual(beamInfo.detectorPos, detectorPos)
-                self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, maxDiff=0.001)
+                self.assertPairsAlmostEqual(beamInfo.pupilPos, pupilPos, self.maxPupilPosErr)
 
     def checkOrientation(self, maxDiff=50*arcseconds):
         """Check that the orientation of the focal plane is correct
