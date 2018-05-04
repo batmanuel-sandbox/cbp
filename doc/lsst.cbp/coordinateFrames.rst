@@ -58,40 +58,59 @@ The pupil frame is simply the `base frame`_ rotated by the :ref:`internal azimut
 At internal :ref:`internal azimuth and altitude <lsst.cbp.internal_angles>` = 0 the `pupil frame`_ matches the `base frame`_.
 
 - x is the optical axis (+ points away from the origin)
-- y at altitude = 0 it is the direction of increasing azimuth; pupil y is also `pupil field angle`_ ±x and `pupil position`_ ±x (-x if the x axis is `flipped <lsst.cbp.flipped_x_axis>`, +x if not)
-- z is the direction of increasing altitude; pupil z is also field angle y and pupil position y
+- y at altitude = 0 it is the direction of increasing azimuth; pupil y is also `pupil field angle`_ ±x and `pupil plane`_ ±x (-x if the x axis is :ref:`flipped <lsst.cbp.flipped_x_axis>`, +x if not)
+- z is the direction of increasing altitude; pupil z is also `pupil field angle`_ y and `pupil plane`_ y
 
 Note that the origin of the `pupil frame`_ will typically be offset along the optical axis from the optical pupil.
 This is true of most telescopes but not the CBP (which, by design, has its optical pupil at the center).
+
+.. image:: pupil_frame_daz_dalt.pdf
+    :width: 1000px
+    :align: center
+    :alt: pupil frame and base frame
+
+Diagram showing the pupil and base frames. Note that azimuth and altitude are :ref:`internal angles <lsst.cbp.internal_angles>`
 
 .. _lsst.cbp.focal_plane:
 
 Focal Plane
 ===========
 The focal plane is a 2-dimensional plane approximation to the actual focal surface (which typically has some curvature).
-The :ref:`internal rotation angle <lsst.cbp.internal_angles>` is the angle of the  ±x,y focal plane axes with respect to the y,z `pupil frame`_.
+The :ref:`internal rotation angle <lsst.cbp.internal_angles>` is the angle of the  x,y focal plane axes with respect to the x,y `pupil plane`_.
 
 .. _lsst.cbp.flipped_x_axis:
 
-If -x then the x axis of the focal plane and all other 2-dimensional plane positions (`pupil position`_, `focal plane field angle`_ and `pupil field angle`_) is said to be "flipped".
+If the focal plane is rotated such that focal plane y is along `pupil frame`_ z, then focal plane +x or -x will be along `pupil frame`_ y.
+If -x then the x axis of the focal plane and all other 2-dimensional plane positions (`pupil plane`_, `focal plane field angle`_ and `pupil field angle`_) are said to be "flipped".
 Determining this parity for the telescope and CBP is part of :ref:`configuration <lsst.cbp.configuration>`.
+
+.. image:: pupil_plane_flipped_x.pdf
+    :width: 1000px
+    :align: center
+    :alt: pupil frame and focal plane with x axis flipped
+
+Diagram showing the pupil with the x axis :ref:`flipped <lsst.cbp.flipped_x_axis>`; the `pupil frame`_ z axis is pointing straight at you. The rotator angle is an :ref:`internal angle<lsst.cbp.internal_angles>`
+
+Note that `focal plane`_ is the same coordinate system, with the same units, as `lsst::afw::cameraGeom::FOCAL_PLANE`.
 
 .. _lsst.cbp.pupil_position:
 
-Pupil Position
-==============
+Pupil Plane
+===========
 A 2-dimensional plane approximation to the primary mirror of the telescope.
 This is used to specify the position of a beam on the telescope pupil.
 
-The pupil position plane is the y,z plane of the `pupil frame`_:
+The pupil plane is the y,z plane of the `pupil frame`_:
 
-- `pupil position`_ `±x <lsst.cbp.flipped_x_axis>` is along `pupil frame`_ y
-- `pupil position`_ y is along `pupil frame`_ z
+- `pupil plane`_ `±x <lsst.cbp.flipped_x_axis>` is along `pupil frame`_ y
+- `pupil plane`_ y is along `pupil frame`_ z
 
-The `pupil frame`_ plane is typically offset along the optical axis from the optical pupil.
-This is true of most telescopes but not the CBP (which, by design, has its optical pupil at the center).
+For the telescope, the pupil plane may be configured to be anywhere along the optical axis using configuration parameter `telPupilOffset`, but the usual location is the front of the primary mirror.
+Internally, math is performed using a pupil plane centered at the center of the telescope.
 
-If the `focal plane`_ x axis is flipped then the x axis of all other 2-dimensional plane coordinates are flipped, including this one.
+The CBP has been designed with the optical pupil at the center of the CBP (where the azimuth and altitude axes intersect), and this software relies on that fact.
+
+If the `focal plane`_ x axis is :ref:`flipped <lsst.cbp.flipped_x_axis>` then the x axis of all other 2-dimensional plane coordinates are :ref:`flipped <lsst.cbp.flipped_x_axis>`, including this one.
 
 .. _lsst.cbp.pupil_field_angle:
 
@@ -99,17 +118,18 @@ Pupil Field Angle
 =================
 The angle of incidence of a ray on the pupil, expressed in x,y radians.
 The two components of the field angle define a great circle arc:
+
 - arc length = hypot(x, y)
-- bearing = atan2(y, `±x <lsst.cbp.flipped_x_axis>`) with 0 along `pupil frame`_ y and 90° along `pupil frame`_ z
+- bearing = atan2(y, x) with 0 along `pupil plane`_ x and 90° along `pupil plane`_ y
 The incident ray is the pupil x axis offset by this great circle arc.
 
 .. _lsst.cbp.focal_plane_field_angle:
 
 Focal Plane Field Angle
 =======================
-`Pupil field angle`_ with the components expressed in `focal plane`_ x,y instead of pupil x,y.
+`Pupil field angle`_ with the components expressed in `focal plane`_ x,y instead of `pupil plane`_ x,y.
 Thus this is a rotation of `pupil field angle`.
-Thus y is always the pupil z axis and `±x <lsst.cbp.flipped_x_axis>` is always the pupil z.
 
-Note that the camera geometry includes a transform from `focal plane`_ position to `focal plane field angle`_ (typically a 3rd order radial polynomial).
-"""
+Note that `focal plane field angle`_ is the same coordinate system, with the same units, as `lsst::afw::cameraGeom::FIELD_ANGLE`.
+Camera geometry includes a transform from `lsst::afw::cameraGeom::FOCAL_PLANE` to `lsst::afw::cameraGeom::FIELD_ANGLE` (
+`focal plane`_ to `focal plane field angle`_), which models optical distortion.
