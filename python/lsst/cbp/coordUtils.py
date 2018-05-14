@@ -219,6 +219,16 @@ def convertVectorFromBaseToPupil(vectorBase, pupilAzAlt):
     vectorPupil: `np.array` of 3 `float`
         3-dimensional vector in the
         :ref:`pupil frame <lsst.cbp.pupil_frame>`
+
+    Note
+    ----
+    This can also be implemented as the following Euler angle
+    rotation matrix, where angle 1 = azimuth, angle 2 = altitude,
+    sx = sine(anglex) and cx = cosine(anglex):
+
+    c1*c2    -s1    -c1*s2
+    c2*s1     c1     s1s2
+    s1        0      c2
     """
     vectorMag = np.linalg.norm(vectorBase)
     vectorSpBase = SpherePoint(Vector3d(*vectorBase))
