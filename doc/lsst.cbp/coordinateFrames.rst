@@ -52,8 +52,7 @@ The origin of the CBP pupil frame is at the :ref:`center <lsst.cbp.center>` of t
 Note: the origin of the `pupil frame`_ will typically be offset along the optical axis from the optical pupil, and that offset is a configuration parameter.
 This is true of most telescopes but not the CBP, because that was designed to have its optical pupil at the CBP center.
 
-.. image:: pupil_frame_daz_dalt.pdf
-    :width: 1000px
+.. image:: pupil_frame_daz_dalt.png
     :align: center
     :alt: pupil frame and base frame
 
@@ -97,14 +96,13 @@ If the focal plane is rotated such that focal plane y is along `pupil frame`_ z,
 If -x then the x axis of the focal plane and all other 2-dimensional plane positions (`pupil plane`_, `focal plane field angle`_ and `pupil field angle`_) are said to be "flipped".
 Determining this parity for the telescope and CBP is part of :ref:`configuration <lsst.cbp.configuration>`.
 
-.. image:: pupil_plane_flipped_x.pdf
-    :width: 1000px
+.. image:: pupil_plane_flipped_x.png
     :align: center
     :alt: pupil frame and focal plane with x axis flipped
 
-Diagram showing the pupil with the x axis :ref:`flipped <lsst.cbp.flipped_x_axis>`; the `pupil frame`_ z axis is pointing straight at you. The rotator angle is an :ref:`internal angle<lsst.cbp.internal_angles>`
+Diagram showing the pupil with the x axis :ref:`flipped <lsst.cbp.flipped_x_axis>`; the `pupil frame`_ z axis is pointing straight at you. Rotation is an :ref:`internal angle<lsst.cbp.internal_angles>`
 
-Note that `focal plane`_ is the same coordinate system as `lsst::afw::cameraGeom::FOCAL_PLANE`.
+Note that `focal plane`_ is the same coordinate system as `lsst.afw.cameraGeom.FOCAL_PLANE`.
 
 .. _lsst.cbp.pupil_position:
 
