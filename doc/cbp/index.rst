@@ -4,7 +4,7 @@
 cbp
 ###
 
-The ``cbp`` package provides code for the collimated beam projector (CBP)
+The ``cbp`` package provides code for the LSST collimated beam projector (CBP)
 
 Project info
 ============

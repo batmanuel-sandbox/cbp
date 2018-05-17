@@ -1,6 +1,6 @@
-#########################
-cbp documentation preview
-#########################
+#################
+cbp documentation
+#################
 
 .. This page is for local development only. It isn't published to pipelines.lsst.io.
 
