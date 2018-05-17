@@ -6,10 +6,10 @@
 lsst.cbp
 ########
 
-The ``cbp`` package provides code for the collimated beam projector (CBP).
+The ``cbp`` package provides code for the LSST `collimated beam projector <https://arxiv.org/abs/1805.05867>`_ (CBP).
 The primary objects of interest are:
 
-`lsst.cbp.CoordinateConverter`: compute the telescope and CBP pointing that will give you a desired beam arrangement, such as placing beam B at point P on the pupil and point D on a specified detector.
+`lsst.cbp.CoordinateConverter`: compute the telescope and CBP pointing that will give you a desired beam arrangement, such as placing beam *b* at point *p* on the pupil and point *d* on a specified detector.
 
 `lsst.cbp.computeHolePositions`: compute hole positions for a CBP mask.
 

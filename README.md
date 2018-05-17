@@ -1,4 +1,4 @@
-# Code for the collimated beam projector (CBP)
+# Code for the [collimated beam projector](https://arxiv.org/abs/1805.05867) (CBP)
 
 Includes:
 `lsst.cbp.CoordinateConverter`: Compute the telescope and CBP pointing that will give you
@@ -7,10 +7,11 @@ Includes:
 
 `lsst.cbp.computeHolePositions`: compute hole positions for a CBP mask.
 
-Notes
------
+Docs
+----
 
-scons will not yet build the docs; to build them manually:
+The main documentation page is `doc/build/html/index.html`.
+However, scons will not yet build the docs automatically; to build them manually:
 
     cd doc
     sphinx-build . _build/html
